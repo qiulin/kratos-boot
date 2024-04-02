@@ -1,0 +1,87 @@
+syntax = "proto3";
+package shared.conf;
+
+option go_package = "github.com/qiulin/kratos-boot/sharedconf;sharedconf";
+
+import "google/protobuf/duration.proto";
+
+message HTTP {
+  message Gin {
+    string mode = 1;
+  }
+  string network = 1;
+  string addr = 2;
+  google.protobuf.Duration timeout = 3;
+  Gin gin = 4;
+}
+
+message Redis {
+  string network = 1;
+  string addr = 2;
+  string password = 3;
+  int32 database = 4;
+  google.protobuf.Duration read_timeout = 5;
+  google.protobuf.Duration write_timeout = 6;
+  int32 pool_size = 7;
+  int32 min_idle_conns = 8;
+  int32 max_idle_conns = 9;
+  int32 max_active_conns = 10;
+  int32 conn_max_idle_time = 11;
+  int32 conn_max_lifetime = 12;
+}
+
+
+message Database {
+  message Pool {
+    int32 max_idle_conns = 1;
+    int32 max_open_conns = 2;
+    int32 conn_max_lifetime = 3;
+  }
+  string driver = 1;
+  string source = 2;
+  Pool pool = 3;
+}
+
+message Kafka {
+  message Consumer {
+    string group_id = 1;
+    int32 worker_num = 2;
+    string codec = 3;
+  }
+
+  message Producer {
+    string codec = 3;
+  }
+  repeated string servers = 1;
+  repeated string topics = 2;
+  Consumer consumer = 3;
+  Producer producer = 4;
+}
+
+message Discovery {
+  message Nacos {
+    message Addr {
+      string ip = 1;
+      int32 port = 2;
+    }
+
+    repeated Addr addrs = 1;
+    string namespace = 2;
+    string log_dir = 3;
+    string cache_dir = 4;
+    int32 max_age = 5;
+    string log_level = 6;
+  }
+
+  Nacos nacos = 1;
+  string service_name = 2;
+  map<string, string> service_routes = 3; // 手工配置的服务和对应地址，通过内网 IP 或 DNS
+}
+
+message Logging {
+  message Zap {
+    bool production = 1;
+  }
+  string level = 1;
+  Zap zap = 2;
+}

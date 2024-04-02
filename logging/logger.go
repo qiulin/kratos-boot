@@ -43,8 +43,10 @@ func NewLogger(zlog *zap.Logger) log.Logger {
 	return z
 }
 
-func NewSLogger(zlog *zap.Logger) *slog.Logger {
-	logger := slog.New(slogzap.Option{Logger: zlog}.NewZapHandler())
+func NewSLogger(level string, zlog *zap.Logger) *slog.Logger {
+	l := slog.LevelDebug
+	_ = l.UnmarshalText([]byte(level))
+	logger := slog.New(slogzap.Option{Level: l, Logger: zlog}.NewZapHandler())
 	slog.SetDefault(logger)
 	return logger
 }

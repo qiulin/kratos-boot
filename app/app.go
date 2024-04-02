@@ -73,7 +73,7 @@ func NewBootstrap(opt *Options) (*Bootstrap, func(), error) {
 	zlogger, _ := logging.NewZapLogger(clog)
 	zlogger = zlogger.With(zap.String("service_id", opt.ServiceId), zap.String("service_name", opt.ServiceName), zap.String("version", opt.Version))
 	logger := logging.NewLogger(zlogger)
-	slogger := logging.NewSLogger(zlogger)
+	slogger := logging.NewSLogger(clog.Level, zlogger)
 	return &Bootstrap{
 			klogger: logger,
 			zlogger: zlogger,

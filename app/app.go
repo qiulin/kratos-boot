@@ -19,7 +19,7 @@ type Bootstrap struct {
 	zlogger *zap.Logger
 	slogger *slog.Logger
 	C       config.Config
-	Meta    *ServiceMeta
+	opt     *Options
 }
 
 func (c *Bootstrap) KLogger() log.Logger {
@@ -46,14 +46,9 @@ func (c *Bootstrap) Log() *slog.Logger {
 	return c.SLogger()
 }
 
-type ServiceMeta struct {
-	ServiceID   string
-	ServiceName string
-	Version     string
-}
-
 type Options struct {
 	ConfigPath, ServiceId, ServiceName, Version string
+	ServiceMetadata                             map[string]string
 }
 
 func (opt *Options) EnsureDefaults() {
@@ -68,11 +63,6 @@ func NewBootstrap(opt *Options) (*Bootstrap, func(), error) {
 		))
 	if err := c.Load(); err != nil {
 		return nil, nil, err
-	}
-	meta := &ServiceMeta{
-		ServiceID:   opt.ServiceId,
-		ServiceName: opt.ServiceName,
-		Version:     opt.Version,
 	}
 
 	clog := &sharedconf.Logging{}
@@ -89,32 +79,32 @@ func NewBootstrap(opt *Options) (*Bootstrap, func(), error) {
 			zlogger: zlogger,
 			slogger: slogger,
 			C:       c,
-			Meta:    meta,
+			opt:     opt,
 		}, func() {
 			c.Close()
 		}, nil
 }
 
-func ExportLogger(f *Bootstrap) log.Logger {
-	return f.KLogger()
+func ExportLogger(b *Bootstrap) log.Logger {
+	return b.KLogger()
 }
 
-func ExportZLogger(f *Bootstrap) *zap.Logger {
-	return f.ZLogger()
+func ExportZLogger(b *Bootstrap) *zap.Logger {
+	return b.ZLogger()
 }
 
-func ExportSLogger(f *Bootstrap) *slog.Logger {
-	return f.SLogger()
+func ExportSLogger(b *Bootstrap) *slog.Logger {
+	return b.SLogger()
 }
 
-func CreateApp(c *Bootstrap, servers []transport.Server) *kratos.App {
+func CreateApp(b *Bootstrap, servers []transport.Server) *kratos.App {
 
 	return kratos.New(
-		kratos.ID(c.Meta.ServiceID),
-		kratos.Name(c.Meta.ServiceName),
-		kratos.Version(c.Meta.Version),
-		kratos.Metadata(map[string]string{}),
-		kratos.Logger(c.KLogger()),
+		kratos.ID(b.opt.ServiceId),
+		kratos.Name(b.opt.ServiceName),
+		kratos.Version(b.opt.Version),
+		kratos.Metadata(b.opt.ServiceMetadata),
+		kratos.Logger(b.KLogger()),
 		kratos.Server(
 			servers...,
 		),

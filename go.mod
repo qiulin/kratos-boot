@@ -3,12 +3,18 @@ module github.com/qiulin/kratos-boot
 go 1.21
 
 require (
+	github.com/allegro/bigcache/v3 v3.1.0
+	github.com/gin-gonic/gin v1.9.1
 	github.com/go-kratos/kratos/contrib/log/zap/v2 v2.0.0-20240401040316-f715eb0bd808
 	github.com/go-kratos/kratos/v2 v2.7.3
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/wire v0.6.0
 	github.com/json-iterator/go v1.1.12
 	github.com/panjf2000/ants/v2 v2.9.1
+	github.com/samber/lo v1.38.1
+	github.com/samber/slog-gin v1.11.0
 	github.com/samber/slog-zap/v2 v2.3.0
+	github.com/things-go/gin-contrib v0.3.0
 	github.com/tx7do/kratos-transport v1.1.3
 	github.com/tx7do/kratos-transport/broker/kafka v1.2.6
 	github.com/tx7do/kratos-transport/transport/kafka v1.2.6
@@ -18,23 +24,19 @@ require (
 )
 
 require (
-	github.com/allegro/bigcache/v3 v3.1.0 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.9.1 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-playground/assert/v2 v2.2.0 // indirect
 	github.com/go-playground/form/v4 v4.2.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.14.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1 // indirect
@@ -48,11 +50,8 @@ require (
 	github.com/openzipkin/zipkin-go v0.4.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
-	github.com/samber/lo v1.38.1 // indirect
 	github.com/samber/slog-common v0.14.0 // indirect
-	github.com/samber/slog-gin v1.11.0 // indirect
 	github.com/segmentio/kafka-go v0.4.47 // indirect
-	github.com/things-go/gin-contrib v0.3.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect

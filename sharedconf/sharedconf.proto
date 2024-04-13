@@ -1,5 +1,5 @@
 syntax = "proto3";
-package shared.conf;
+package sharedconf;
 
 option go_package = "github.com/qiulin/kratos-boot/sharedconf;sharedconf";
 

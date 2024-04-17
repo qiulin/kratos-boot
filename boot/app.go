@@ -99,6 +99,10 @@ func ExportSLogger(b *Bootstrap) *slog.Logger {
 	return b.SLogger()
 }
 
+func ExportConfig(b *Bootstrap) config.Config {
+	return b.C
+}
+
 func CreateApp(b *Bootstrap, servers []transport.Server, f *discovery.Factory) *kratos.App {
 	opts := []kratos.Option{
 		kratos.ID(b.opt.ServiceId),
@@ -119,4 +123,4 @@ func CreateApp(b *Bootstrap, servers []transport.Server, f *discovery.Factory) *
 	)
 }
 
-var ProviderSet = wire.NewSet(ExportSLogger, ExportZLogger, ExportLogger, CreateApp, discovery.NewFactory)
+var ProviderSet = wire.NewSet(ExportSLogger, ExportZLogger, ExportLogger, ExportConfig, CreateApp, discovery.NewFactory)

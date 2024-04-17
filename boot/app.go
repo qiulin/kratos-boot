@@ -1,8 +1,9 @@
-package app
+package boot
 
 import (
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
+	"github.com/go-kratos/kratos/v2/config/env"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport"
@@ -58,6 +59,7 @@ func NewBootstrap(opt *Options) (*Bootstrap, func(), error) {
 	opt.EnsureDefaults()
 	c := config.New(
 		config.WithSource(
+			env.NewSource(""),
 			file.NewSource(opt.ConfigPath),
 		))
 	if err := c.Load(); err != nil {

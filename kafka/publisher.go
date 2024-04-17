@@ -23,6 +23,9 @@ func (p *Publishers) Start(ctx context.Context) error {
 	for i := range p.publishers {
 		pub := p.publishers[i]
 		eg.Go(func() error {
+			if err := pub.Init(); err != nil {
+				return err
+			}
 			return pub.Connect()
 		})
 	}

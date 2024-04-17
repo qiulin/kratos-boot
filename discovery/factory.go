@@ -45,7 +45,7 @@ func NewNacosRegistry(nc naming_client.INamingClient, c *sharedconf.Discovery_Na
 	var opts []nacos.Option
 	group := c.Group
 	if group == "" {
-		group, _ = netutil.GetLocalIP()
+		group = "DEFAULT"
 	}
 	opts = append(opts, nacos.WithGroup(group))
 	if c.Prefix != "" {

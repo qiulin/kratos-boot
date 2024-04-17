@@ -8,6 +8,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/google/wire"
+	"github.com/qiulin/kratos-boot/discovery"
 	"github.com/qiulin/kratos-boot/logging"
 	"github.com/qiulin/kratos-boot/sharedconf"
 	"go.uber.org/zap"
@@ -98,9 +99,8 @@ func ExportSLogger(b *Bootstrap) *slog.Logger {
 	return b.SLogger()
 }
 
-func CreateApp(b *Bootstrap, servers []transport.Server) *kratos.App {
-
-	return kratos.New(
+func CreateApp(b *Bootstrap, servers []transport.Server, f *discovery.Factory) *kratos.App {
+	opts := []kratos.Option{
 		kratos.ID(b.opt.ServiceId),
 		kratos.Name(b.opt.ServiceName),
 		kratos.Version(b.opt.Version),
@@ -109,7 +109,14 @@ func CreateApp(b *Bootstrap, servers []transport.Server) *kratos.App {
 		kratos.Server(
 			servers...,
 		),
+	}
+	if r, exists := f.Registrar(); exists {
+		opts = append(opts, kratos.Registrar(r))
+	}
+
+	return kratos.New(
+		opts...,
 	)
 }
 
-var ProviderSet = wire.NewSet(ExportSLogger, ExportZLogger, ExportLogger, CreateApp)
+var ProviderSet = wire.NewSet(ExportSLogger, ExportZLogger, ExportLogger, CreateApp, discovery.NewFactory)

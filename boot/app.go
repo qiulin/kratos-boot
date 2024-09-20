@@ -1,6 +1,7 @@
 package boot
 
 import (
+	"emperror.dev/emperror"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/env"
@@ -49,6 +50,7 @@ func (c *Bootstrap) Log() *slog.Logger {
 
 type Options struct {
 	ConfigPath, ServiceId, ServiceName, Version string
+	EnvPrefix                                   string
 	ServiceMetadata                             map[string]string
 }
 
@@ -56,20 +58,30 @@ func (opt *Options) EnsureDefaults() {
 
 }
 
+func defaultLogConfig() *sharedconf.Logging {
+	return &sharedconf.Logging{
+		Level: "debug",
+	}
+}
+
 func NewBootstrap(opt *Options) (*Bootstrap, func(), error) {
 	opt.EnsureDefaults()
-	c := config.New(
+	cs := config.New(
 		config.WithSource(
-			env.NewSource(""),
+			env.NewSource(opt.EnvPrefix),
 			file.NewSource(opt.ConfigPath),
 		))
-	if err := c.Load(); err != nil {
+	if err := cs.Load(); err != nil {
 		return nil, nil, err
 	}
 
 	clog := &sharedconf.Logging{}
-	if err := c.Value("logging").Scan(clog); err != nil {
-		return nil, nil, err
+	if err := cs.Value("logging").Scan(clog); err != nil {
+		if err == config.ErrNotFound {
+			clog = defaultLogConfig()
+		} else {
+			return nil, nil, err
+		}
 	}
 
 	zlogger, _ := logging.NewZapLogger(clog)
@@ -80,10 +92,10 @@ func NewBootstrap(opt *Options) (*Bootstrap, func(), error) {
 			klogger: logger,
 			zlogger: zlogger,
 			slogger: slogger,
-			C:       c,
+			C:       cs,
 			opt:     opt,
 		}, func() {
-			c.Close()
+			cs.Close()
 		}, nil
 }
 
@@ -119,4 +131,19 @@ func CreateApp(b *Bootstrap, servers []transport.Server, f *discovery.Factory) *
 	)
 }
 
-var ProviderSet = wire.NewSet(ExportSLogger, ExportZLogger, ExportLogger, CreateApp, discovery.NewFactory)
+func ExportConfig(b *Bootstrap) config.Config {
+	return b.C
+}
+
+type WireFunc func(bootstrap *Bootstrap) (*kratos.App, func(), error)
+
+func RunOrPanic(b *Bootstrap, wireFunc WireFunc) {
+	app, cleanup, err := wireFunc(b)
+	if err != nil {
+		panic(err)
+	}
+	defer cleanup()
+	emperror.Panic(app.Run())
+}
+
+var ProviderSet = wire.NewSet(ExportSLogger, ExportZLogger, ExportLogger, CreateApp, ExportConfig, discovery.NewFactory)

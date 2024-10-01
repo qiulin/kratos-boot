@@ -79,7 +79,7 @@ func (ac *AuthorityContext) DecorateFunc(h gin.HandlerFunc, requires ...string) 
 				c.AbortWithStatus(http.StatusInternalServerError)
 				return
 			}
-			if lo.Contains(authorities, AuthorityAdmin) {
+			if lo.Contains(authorities, AuthorityRoot) {
 				h(c)
 				return
 			}
@@ -91,7 +91,7 @@ func (ac *AuthorityContext) DecorateFunc(h gin.HandlerFunc, requires ...string) 
 			authorities = strings.Split(string(v), ",")
 		}
 		//if len(authorities) == 0 {
-		authorities = append(authorities, AuthorityPublic)
+		authorities = append(authorities, AuthorityAnonymous)
 		//}
 		if !lo.Some(authorities, requires) {
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -102,9 +102,9 @@ func (ac *AuthorityContext) DecorateFunc(h gin.HandlerFunc, requires ...string) 
 }
 
 const (
-	AuthorityAdmin  = "admin"
-	AuthorityPublic = "public"
-	HeaderAuthUser  = "X-Auth-User"
+	AuthorityRoot      = "root"
+	AuthorityAnonymous = "anonymous"
+	HeaderAuthUser     = "X-Auth-User"
 )
 
 var ctxIdentity = identityCtx{}

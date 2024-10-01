@@ -16,6 +16,10 @@ func (cmd *HelloCommand) Command() string {
 	return "hello"
 }
 
+func (cmd *HelloCommand) Example() string {
+	return "hello"
+}
+
 func (cmd *HelloCommand) Describe() string {
 	return "hello world"
 }

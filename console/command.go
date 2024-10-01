@@ -12,6 +12,14 @@ import (
 	"time"
 )
 
+type ExampleAware interface {
+	Example() string
+}
+
+type LongDescribeAware interface {
+	LongDescribe() string
+}
+
 type Command interface {
 	Command() string
 	Describe() string
@@ -68,6 +76,15 @@ func NewCommandLine(o *Option, app *kratos.App, cmds []Command, wg *sync.WaitGro
 				return err
 			},
 		}
+
+		if v, ok := c.(ExampleAware); ok {
+			cmd.Example = v.Example()
+		}
+
+		if v, ok := c.(LongDescribeAware); ok {
+			cmd.Long = v.LongDescribe()
+		}
+
 		rootCmd.AddCommand(cmd)
 	}
 

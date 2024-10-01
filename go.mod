@@ -5,6 +5,7 @@ go 1.22
 toolchain go1.22.0
 
 require (
+	emperror.dev/emperror v0.33.0
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-kratos/kratos/contrib/log/zap/v2 v2.0.0-20240401040316-f715eb0bd808
@@ -18,6 +19,7 @@ require (
 	github.com/samber/lo v1.38.1
 	github.com/samber/slog-gin v1.11.0
 	github.com/samber/slog-zap/v2 v2.3.0
+	github.com/spf13/cobra v1.8.1
 	github.com/things-go/gin-contrib v0.3.0
 	github.com/tx7do/kratos-transport v1.1.8
 	github.com/tx7do/kratos-transport/broker/kafka v1.2.13
@@ -29,7 +31,6 @@ require (
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
-	emperror.dev/emperror v0.33.0 // indirect
 	emperror.dev/errors v0.8.0 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.18 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
@@ -40,6 +41,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
+	github.com/go-kratos/aegis v0.2.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/form/v4 v4.2.1 // indirect
@@ -48,7 +50,9 @@ require (
 	github.com/go-playground/validator/v10 v10.14.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
@@ -64,6 +68,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/samber/slog-common v0.14.0 // indirect
 	github.com/segmentio/kafka-go v0.4.47 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/toolkits/concurrent v0.0.0-20150624120057-a4371d70e3e3 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect

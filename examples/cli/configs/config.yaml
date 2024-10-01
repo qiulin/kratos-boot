@@ -1,0 +1,12 @@
+server:
+  http:
+    addr: 0.0.0.0:8010
+    timeout: 1s
+
+data:
+
+
+logging:
+  level: debug
+  zap:
+    production: true

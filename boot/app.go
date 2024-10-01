@@ -24,6 +24,10 @@ type Bootstrap struct {
 	opt     *Options
 }
 
+func (c *Bootstrap) Option() *Options {
+	return c.opt
+}
+
 func (c *Bootstrap) KLogger() log.Logger {
 	return c.klogger
 }
@@ -37,11 +41,14 @@ func (c *Bootstrap) SLogger() *slog.Logger {
 }
 
 func (c *Bootstrap) ScanRootConfig(in interface{}) error {
-	return c.C.Scan(in)
+	return c.ScanConfig(in)
 }
 
-func (c *Bootstrap) ScanConfig(key string, in interface{}) error {
-	return c.C.Value(key).Scan(in)
+func (c *Bootstrap) ScanConfig(in interface{}, paths ...string) error {
+	if len(paths) > 0 {
+		return c.C.Value(paths[0]).Scan(in)
+	}
+	return c.C.Scan(in)
 }
 
 func (c *Bootstrap) Log() *slog.Logger {
@@ -111,7 +118,7 @@ func ExportSLogger(b *Bootstrap) *slog.Logger {
 	return b.SLogger()
 }
 
-func CreateApp(b *Bootstrap, servers []transport.Server, f *discovery.Factory) *kratos.App {
+func NewApp(b *Bootstrap, servers []transport.Server, f *discovery.Factory) *kratos.App {
 	opts := []kratos.Option{
 		kratos.ID(b.opt.ServiceId),
 		kratos.Name(b.opt.ServiceName),
@@ -137,7 +144,7 @@ func ExportConfig(b *Bootstrap) config.Config {
 
 type WireFunc func(bootstrap *Bootstrap) (*kratos.App, func(), error)
 
-func RunOrPanic(b *Bootstrap, wireFunc WireFunc) {
+func Run(b *Bootstrap, wireFunc WireFunc) {
 	app, cleanup, err := wireFunc(b)
 	if err != nil {
 		panic(err)
@@ -146,4 +153,6 @@ func RunOrPanic(b *Bootstrap, wireFunc WireFunc) {
 	emperror.Panic(app.Run())
 }
 
-var ProviderSet = wire.NewSet(ExportSLogger, ExportZLogger, ExportLogger, CreateApp, ExportConfig, discovery.NewFactory)
+var ProviderSetBase = wire.NewSet(ExportSLogger, ExportZLogger, ExportLogger, ExportConfig, discovery.NewFactory)
+
+var ProviderSet = wire.NewSet(ProviderSetBase, NewApp)

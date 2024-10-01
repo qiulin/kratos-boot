@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"errors"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/qiulin/kratos-boot/sharedconf"
 	"github.com/tx7do/kratos-transport/broker"
@@ -10,14 +11,14 @@ import (
 	"log/slog"
 )
 
-var _ transport.Server = new(Publishers)
+var _ transport.Server = new(Emitter)
 
-type Publishers struct {
+type Emitter struct {
 	publishers map[string]broker.Broker
 	logger     *slog.Logger
 }
 
-func (p *Publishers) Start(ctx context.Context) error {
+func (p *Emitter) Start(ctx context.Context) error {
 	var eg *errgroup.Group
 	eg, ctx = errgroup.WithContext(ctx)
 	for i := range p.publishers {
@@ -32,7 +33,7 @@ func (p *Publishers) Start(ctx context.Context) error {
 	return eg.Wait()
 }
 
-func (p *Publishers) Stop(ctx context.Context) error {
+func (p *Emitter) Stop(ctx context.Context) error {
 
 	var eg *errgroup.Group
 	eg, ctx = errgroup.WithContext(ctx)
@@ -45,11 +46,21 @@ func (p *Publishers) Stop(ctx context.Context) error {
 	return eg.Wait()
 }
 
-func (p *Publishers) Publisher(name string) broker.Broker {
+var ErrTopicNotFound = errors.New("topic not found")
+
+func (p *Emitter) Emit(ctx context.Context, eventName string, event any) error {
+	pub, ok := p.publishers[eventName]
+	if !ok {
+		return ErrTopicNotFound
+	}
+	return pub.Publish(ctx, eventName, event)
+}
+
+func (p *Emitter) Publisher(name string) broker.Broker {
 	return p.publishers[name]
 }
 
-func NewPublishers(cs map[string]*sharedconf.Kafka, logger *slog.Logger) *Publishers {
+func NewPublishers(cs map[string]*sharedconf.Kafka, logger *slog.Logger) *Emitter {
 	publishers := map[string]broker.Broker{}
 	for k, c := range cs {
 		if c.Producer == nil {
@@ -58,7 +69,7 @@ func NewPublishers(cs map[string]*sharedconf.Kafka, logger *slog.Logger) *Publis
 		b := newPublisher(c)
 		publishers[k] = b
 	}
-	return &Publishers{publishers: publishers, logger: logger}
+	return &Emitter{publishers: publishers, logger: logger}
 }
 
 func newPublisher(c *sharedconf.Kafka) broker.Broker {

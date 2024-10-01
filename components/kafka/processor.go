@@ -11,13 +11,13 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var _ transport.Server = new(Subscribers)
+var _ transport.Server = new(Processor)
 
-type Subscribers struct {
+type Processor struct {
 	servers []*kafka.Server
 }
 
-func (s *Subscribers) Start(ctx context.Context) error {
+func (s *Processor) Start(ctx context.Context) error {
 	var eg *errgroup.Group
 	eg, ctx = errgroup.WithContext(ctx)
 	for i := range s.servers {
@@ -29,7 +29,7 @@ func (s *Subscribers) Start(ctx context.Context) error {
 	return eg.Wait()
 }
 
-func (s *Subscribers) Stop(ctx context.Context) error {
+func (s *Processor) Stop(ctx context.Context) error {
 	var eg *errgroup.Group
 	eg, ctx = errgroup.WithContext(ctx)
 	for i := range s.servers {
@@ -41,8 +41,8 @@ func (s *Subscribers) Stop(ctx context.Context) error {
 	return eg.Wait()
 }
 
-func newSubscribers(servers ...*kafka.Server) *Subscribers {
-	return &Subscribers{
+func newSubscribers(servers ...*kafka.Server) *Processor {
+	return &Processor{
 		servers: servers,
 	}
 }
@@ -81,7 +81,7 @@ func (h *PooledHandler) HandlerFunc() broker.Handler {
 	}
 }
 
-func NewSubscribers(cs map[string]*sharedconf.Kafka, routes map[string]broker.Handler, logger log.Logger) *Subscribers {
+func NewProcessor(cs map[string]*sharedconf.Kafka, routes map[string]broker.Handler, logger log.Logger) *Processor {
 	servers := []*kafka.Server{}
 	for k, h := range routes {
 		c, ok := cs[k]

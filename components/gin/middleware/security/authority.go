@@ -3,23 +3,20 @@ package security
 import (
 	"context"
 	"errors"
-	"github.com/allegro/bigcache/v3"
+	"github.com/eko/gocache/lib/v4/cache"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	"log/slog"
 	"net/http"
-	"strconv"
-	"strings"
-	"time"
 )
 
-type IdentifyExtractFunc func(*gin.Context) string
+type IdentifyExtractFunc[T comparable] func(*gin.Context) (T, bool)
 
-type AuthorityDecorator struct {
-	retriever           AuthorityRetriever
-	cache               *bigcache.BigCache
+type AuthorityDecorator[T comparable] struct {
+	retriever           AuthorityRetriever[T]
+	cache               *cache.LoadableCache[[]string]
 	logger              *slog.Logger
-	extractIdentityFunc IdentifyExtractFunc
+	extractIdentityFunc IdentifyExtractFunc[T]
 }
 
 var ErrUserNotLogin = errors.New("user not login")
@@ -37,63 +34,46 @@ func Context(c *gin.Context) context.Context {
 func IdentityFromContext(c context.Context) string {
 	return c.Value(ctxIdentity).(string)
 }
-func NewAuthorityDecorator(retriever AuthorityRetriever, slogger *slog.Logger, extractIdentityFunc IdentifyExtractFunc) (*AuthorityDecorator, func(), error) {
-	cache, err := bigcache.New(context.TODO(), bigcache.DefaultConfig(1*time.Minute))
+
+func newAuthorityCache[T comparable](retriever AuthorityRetriever[T]) (*cache.LoadableCache[[]string], error) {
+	return nil, errors.New("TODO")
+}
+
+func NewAuthorityDecorator[T comparable](retriever AuthorityRetriever[T], slogger *slog.Logger, extractIdentityFunc IdentifyExtractFunc[T]) (*AuthorityDecorator[T], func(), error) {
+	ca, err := newAuthorityCache(retriever)
 	if err != nil {
 		return nil, nil, err
 	}
-	return &AuthorityDecorator{
+	return &AuthorityDecorator[T]{
 			retriever:           retriever,
-			cache:               cache,
+			cache:               ca,
 			logger:              slogger,
 			extractIdentityFunc: extractIdentityFunc,
 		}, func() {
-			_ = cache.Close()
+			_ = ca.Close()
 		}, nil
 }
 
-type AuthorityRetriever interface {
-	GetAuthorities(ctx context.Context, uid int64) ([]string, error)
+type AuthorityRetriever[T comparable] interface {
+	GetAuthorities(ctx context.Context, uid T) ([]string, error)
 }
 
-func (ac *AuthorityDecorator) DecorateFunc(h gin.HandlerFunc, requires ...string) gin.HandlerFunc {
+func (ac *AuthorityDecorator[T]) DecorateFunc(h gin.HandlerFunc, requires ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		idk := ac.extractIdentityFunc(c)
-		if idk == "" {
+		identity, ok := ac.extractIdentityFunc(c)
+		if !ok && !lo.Contains(requires, AuthorityAnonymous) {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
-		var authorities []string
-		v, err := ac.cache.Get(idk)
+		authorities, err := ac.cache.Get(c.Request.Context(), identity)
 		if err != nil {
-			uid, err := strconv.ParseInt(idk, 10, 64)
-			if err != nil {
-				ac.logger.Error("failed to convert uid to int", "error", err)
-				c.AbortWithStatus(http.StatusUnauthorized)
-				return
-			}
-			authorities, err = ac.retriever.GetAuthorities(c.Request.Context(), uid)
-			if err != nil {
-				ac.logger.Error("failed to retriever user authorities", "error", err)
-				c.AbortWithStatus(http.StatusInternalServerError)
-				return
-			}
-			if lo.Contains(authorities, AuthorityRoot) {
-				h(c)
-				return
-			}
-			err = ac.cache.Set(idk, []byte(strings.Join(authorities, ",")))
-			if err != nil {
-				ac.logger.Error("failed to set user authorities cache", "error", err)
-			}
-		} else {
-			authorities = strings.Split(string(v), ",")
+			ac.logger.Error("failed to set user authorities cache", "error", err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
 		}
-		//if len(authorities) == 0 {
 		authorities = append(authorities, AuthorityAnonymous)
-		//}
-		if !lo.Some(authorities, requires) {
+		if !lo.Contains(authorities, AuthorityRoot) && !lo.Some(authorities, requires) {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -105,6 +85,7 @@ const (
 	AuthorityRoot      = "root"
 	AuthorityAnonymous = "anonymous"
 	HeaderAuthUser     = "X-Auth-User"
+	ContextKeyIdentity = "_identity"
 )
 
 var ctxIdentity = identityCtx{}

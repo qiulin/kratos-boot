@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"log/slog"
+	"time"
 )
 
 func LookupJWT(c *gin.Context) (string, bool) {
@@ -17,8 +18,7 @@ func LookupJWT(c *gin.Context) (string, bool) {
 	return t[7:], true // remove Bearer prefix
 }
 
-func JwtLookupFunc(secretKey string, logger *slog.Logger) gin.HandlerFunc {
-
+func JWTLookupFunc(secretKey string, logger *slog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t := c.Request.Header.Get(HeaderAuthorization)
 		if t == "" || len(t) <= 7 {
@@ -34,13 +34,22 @@ func JwtLookupFunc(secretKey string, logger *slog.Logger) gin.HandlerFunc {
 			c.AbortWithStatus(401)
 			return
 		}
+		expiration, err := token.Claims.GetExpirationTime()
+		if err != nil {
+			c.AbortWithStatus(401)
+			return
+		}
+		if expiration.Before(time.Now()) {
+			c.AbortWithStatus(401)
+			return
+		}
 		user, err := token.Claims.GetSubject()
 		if err != nil {
 			logger.Error("failed to get subject from jwt token", "error", err)
 			c.AbortWithStatus(401)
 			return
 		}
-		c.Set(CtxIdentity, user)
+		c.Set(ContextKeyIdentity, user)
 
 		c.Next()
 	}

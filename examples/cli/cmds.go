@@ -21,7 +21,7 @@ func (cmd *HelloCommand) Example() string {
 }
 
 func (cmd *HelloCommand) Describe() string {
-	return "hello world"
+	return "Say hello world"
 }
 
 func (cmd *HelloCommand) Run(ctx context.Context, args []string) error {
@@ -54,7 +54,7 @@ func (cli *TimestampCommand) Command() string {
 }
 
 func (cli *TimestampCommand) Describe() string {
-	return "unix timestamp"
+	return "Print unix timestamp"
 }
 
 func (cli *TimestampCommand) Run(ctx context.Context, args []string) error {

@@ -22,7 +22,7 @@ func ExportConfig(b *boot.Bootstrap) *conf.Bootstrap {
 
 func NewConsoleOption() *console.Option {
 	return &console.Option{
-		Name: "hello cli",
+		Name: "cli",
 	}
 }
 

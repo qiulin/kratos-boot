@@ -31,7 +31,7 @@ func main() {
 		ServiceName:     Name,
 		Version:         Version,
 		ServiceMetadata: nil,
-		EnvPrefix:       "BOOT_",
+		EnvPrefix:       "CLI_",
 	})
 	emperror.Panic(err)
 	defer cleanup()

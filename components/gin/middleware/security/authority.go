@@ -15,7 +15,7 @@ import (
 
 type IdentifyExtractFunc func(*gin.Context) string
 
-type AuthorityContext struct {
+type AuthorityDecorator struct {
 	retriever           AuthorityRetriever
 	cache               *bigcache.BigCache
 	logger              *slog.Logger
@@ -37,12 +37,12 @@ func Context(c *gin.Context) context.Context {
 func IdentityFromContext(c context.Context) string {
 	return c.Value(ctxIdentity).(string)
 }
-func NewAuthorityContext(retriever AuthorityRetriever, slogger *slog.Logger, extractIdentityFunc IdentifyExtractFunc) (*AuthorityContext, func(), error) {
+func NewAuthorityDecorator(retriever AuthorityRetriever, slogger *slog.Logger, extractIdentityFunc IdentifyExtractFunc) (*AuthorityDecorator, func(), error) {
 	cache, err := bigcache.New(context.TODO(), bigcache.DefaultConfig(1*time.Minute))
 	if err != nil {
 		return nil, nil, err
 	}
-	return &AuthorityContext{
+	return &AuthorityDecorator{
 			retriever:           retriever,
 			cache:               cache,
 			logger:              slogger,
@@ -56,7 +56,7 @@ type AuthorityRetriever interface {
 	GetAuthorities(ctx context.Context, uid int64) ([]string, error)
 }
 
-func (ac *AuthorityContext) DecorateFunc(h gin.HandlerFunc, requires ...string) gin.HandlerFunc {
+func (ac *AuthorityDecorator) DecorateFunc(h gin.HandlerFunc, requires ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idk := ac.extractIdentityFunc(c)
 		if idk == "" {

@@ -31,11 +31,11 @@ func GetIdentity(c *gin.Context) string {
 
 func Context(c *gin.Context) context.Context {
 	ctx := c.Request.Context()
-	return context.WithValue(ctx, CtxIdentity, GetIdentity(c))
+	return context.WithValue(ctx, ctxIdentity, GetIdentity(c))
 }
 
-func GetIdentityFromContext(c context.Context) string {
-	return c.Value(CtxIdentity).(string)
+func IdentityFromContext(c context.Context) string {
+	return c.Value(ctxIdentity).(string)
 }
 func NewAuthorityContext(retriever AuthorityRetriever, slogger *slog.Logger, extractIdentityFunc IdentifyExtractFunc) (*AuthorityContext, func(), error) {
 	cache, err := bigcache.New(context.TODO(), bigcache.DefaultConfig(1*time.Minute))
@@ -105,5 +105,8 @@ const (
 	AuthorityAdmin  = "admin"
 	AuthorityPublic = "public"
 	HeaderAuthUser  = "X-Auth-User"
-	CtxIdentity     = "_identity"
 )
+
+var ctxIdentity = identityCtx{}
+
+type identityCtx struct{}
